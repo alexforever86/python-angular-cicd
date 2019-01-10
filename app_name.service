@@ -1,0 +1,20 @@
+[Unit]
+Description=Gunicorn instance to serve app_name Api
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/app_name
+EnvironmentFile=/home/ubuntu/app_name/.env
+ExecStart=/home/ubuntu/.local/bin/gunicorn --workers 3 \
+                                           --bind 0.0.0.0:5000 \
+                                           --error-logfile /var/log/app_name/error.log  \
+                                           --access-logfile /var/log/app_name/access.log \
+                                           --capture-output \
+                                           --log-level debug \
+                                           -m 007 \
+                                           wsgi:app
+
+[Install]
+WantedBy=multi-user.target
