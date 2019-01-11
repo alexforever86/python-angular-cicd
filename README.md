@@ -107,3 +107,67 @@ sudo systemctl restart $APP_NAME
 sudo systemctl enable $APP_NAME
 sudo systemctl status $APP_NAME
 ```
+
+# Angular CICD with Buddy.Works
+
+**Buddy.Works** CI/CD of **Angular** application to be deployed on **AWS S3** on **Git** push.
+
+### Variables
+
+- AWS_ACCESS_KEY_ID
+
+- AWS_SECRET_ACCESS_KEY
+
+- S3_BUCKET_NAME
+
+- PUBLIC_IP
+
+- SSH_USERNAME
+
+- WEB_URL
+
+- APP_NAME
+
+
+### Actions
+
+Note: The free server in Buddy.Works cannot handle the Angular build. So, building Angular app in our on server.
+##### 1. System Setup
+
+Setup a SSH action to run the bash script in EC2 server.
+ 
+```
+sudo apt-get install -y npm
+sudo npm install -g @angular/cli
+pip install awscli
+mkdir -p webapp_build
+```
+
+##### 2. Upload files to server
+
+Setup a SFTP action to upload all the angular files to the `webapp_build` path in server.
+
+##### 3. Angular Build and Deploy to S3
+
+Setup a SSH action to run the bash script in EC2 server.
+
+```
+cat > environment.prod.ts <<- "EOF"
+export const environment = {
+  apiUrl: '$API_URL',
+  webUrl: '$WEB_URL',
+  production: true
+};
+EOF
+mv environment.prod.ts src/environments/environment.prod.ts
+
+npm install
+ng serve --prod
+
+export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
+~/.local/bin/aws s3 sync ./dist s3://$BUCKETNAME --acl public-read
+```
+
+##### 4. Add a CloudFront infront of S3. 
